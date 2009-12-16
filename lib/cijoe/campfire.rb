@@ -2,7 +2,7 @@ class CIJoe
   module Campfire
     def self.activate
       if valid_config?
-        require 'tinder'
+        require 'broach'
 
         CIJoe::Build.class_eval do
           include CIJoe::Campfire
@@ -13,9 +13,8 @@ class CIJoe
         puts "Can't load Campfire notifier."
         puts "Please add the following to your project's .git/config:"
         puts "[campfire]"
-        puts "\tuser = your@campfire.email"
-        puts "\tpass = passw0rd"
-        puts "\tsubdomain = whatever"
+        puts "\ttoken = your_api_token"
+        puts "\taccount = whatever"
         puts "\troom = Awesomeness"
         puts "\tssl = false"
       end
@@ -23,16 +22,15 @@ class CIJoe
 
     def self.config
       @config ||= {
-        :subdomain => Config.campfire.subdomain.to_s,
-        :user      => Config.campfire.user.to_s,
-        :pass      => Config.campfire.pass.to_s,
+        :account   => Config.campfire.account.to_s,
+        :token     => Config.campfire.token.to_s,
         :room      => Config.campfire.room.to_s,
-        :ssl       => Config.campfire.ssl.to_s.strip == 'true'
+        :use_ssl   => Config.campfire.ssl.to_s.strip == 'true'
       }
     end
 
     def self.valid_config?
-      %w( subdomain user pass room ).all? do |key|
+      %w( account token room ).all? do |key|
         !config[key.intern].empty?
       end
     end
@@ -46,12 +44,8 @@ class CIJoe
   private
     def room
       @room ||= begin
-        config = Campfire.config
-        options = {}
-        options[:ssl] = config[:ssl] ? true : false
-        campfire = Tinder::Campfire.new(config[:subdomain], options)
-        campfire.login(config[:user], config[:pass])
-        campfire.find_room_by_name(config[:room])
+        Broach.settings = Campfire.config
+        Broach::Room.find_by_name(Campfire.config[:room])
       end
     end
 
