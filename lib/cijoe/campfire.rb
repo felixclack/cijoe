@@ -22,10 +22,10 @@ class CIJoe
 
     def self.config
       @config ||= {
-        :account   => Config.campfire.account.to_s,
-        :token     => Config.campfire.token.to_s,
-        :room      => Config.campfire.room.to_s,
-        :use_ssl   => Config.campfire.ssl.to_s.strip == 'true'
+        'account'   => Config.campfire.account.to_s,
+        'token'     => Config.campfire.token.to_s,
+        'room'      => Config.campfire.room.to_s,
+        'use_ssl'   => Config.campfire.ssl.to_s.strip == 'true'
       }
     end
 
@@ -45,7 +45,7 @@ class CIJoe
     def room
       @room ||= begin
         Broach.settings = Campfire.config
-        Broach::Room.find_by_name(Campfire.config[:room])
+        Broach::Room.find_by_name(Campfire.config['room'])
       end
     end
 
