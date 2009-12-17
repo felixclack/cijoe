@@ -38,7 +38,7 @@ class CIJoe
     end
 
     def notify
-      room.speak "#{short_message}. #{commit.url}"
+      room.speak "#{short_message}. #{commit.url} #{play_sound}"
       room.paste full_message if failed?
       room.leave
     end
@@ -57,6 +57,10 @@ class CIJoe
 
     def short_message
       "Build #{short_sha} of #{project} #{worked? ? "was successful" : "failed"}"
+    end
+    
+    def play_sound
+      "/play #{worked? ? "rimshot" : "trombone"}"
     end
 
     def full_message
