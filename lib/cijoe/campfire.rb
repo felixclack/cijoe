@@ -22,10 +22,10 @@ class CIJoe
 
     def self.config
       @config ||= {
-        'account'   => Config.campfire.account.to_s,
-        'token'     => Config.campfire.token.to_s,
-        'room'      => Config.campfire.room.to_s,
-        'use_ssl'   => Config.campfire.ssl.to_s.strip == 'true'
+        :account   => Config.campfire.account.to_s,
+        :token     => Config.campfire.token.to_s,
+        :room      => Config.campfire.room.to_s,
+        :use_ssl   => Config.campfire.ssl.to_s.strip == 'true'
       }
     end
 
