@@ -13,12 +13,6 @@
 #
 # Seriously, I'm gonna be nuts about keeping this simple.
 
-begin
-  require 'open4'
-rescue LoadError
-  abort "** Please install open4"
-end
-
 require 'cijoe/version'
 require 'cijoe/config'
 require 'cijoe/commit'
@@ -74,6 +68,7 @@ class CIJoe
     @current_build.status = status
     @current_build.output = output
     @last_build = @current_build
+
     @current_build = nil
     write_build 'current', @current_build
     write_build 'last', @last_build
@@ -89,22 +84,42 @@ class CIJoe
     Thread.new { build! }
   end
 
+  def open_pipe(cmd)
+    read, write = IO.pipe
+
+    pid = fork do
+      read.close
+      STDOUT.reopen write
+      exec cmd
+    end
+
+    write.close
+
+    yield read, pid
+  end
+
   # update git then run the build
   def build!
     build = @current_build
-    out, err, status = '', '', nil
+    output = ''
     git_update
     build.sha = git_sha
     write_build 'current', build
 
-    status = Open4.popen4(runner_command) do |pid, stdin, stdout, stderr|
+    open_pipe("#{runner_command} 2>&1") do |pipe, pid|
+      puts "#{Time.now.to_i}: Building #{build.short_sha}: pid=#{pid}"
+
       build.pid = pid
       write_build 'current', build
-      err, out = stderr.read.strip, stdout.read.strip
+      output = pipe.read
     end
 
-    status.exitstatus.to_i == 0 ? build_worked(out) : build_failed(out, err)
+    status = $?.exitstatus.to_i
+    puts "#{Time.now.to_i}: Built #{build.short_sha}: status=#{status}"
+
+    status == 0 ? build_worked(output) : build_failed('', output)
   rescue Object => e
+    puts "Exception building: #{e.message} (#{e.class})"
     build_failed('', e.to_s)
   end
 
@@ -153,8 +168,14 @@ class CIJoe
 
   # restore current / last build state from disk.
   def restore
-    @last_build = read_build('last')
-    @current_build = read_build('current')
+    unless @last_build
+      @last_build = read_build('last')
+    end
+
+    unless @current_build
+      @current_build = read_build('current')
+    end
+
     Process.kill(0, @current_build.pid) if @current_build && @current_build.pid
   rescue Errno::ESRCH
     # build pid isn't running anymore. assume previous
