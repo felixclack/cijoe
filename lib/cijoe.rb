@@ -89,7 +89,7 @@ class CIJoe
 
     pid = fork do
       read.close
-      STDOUT.reopen write
+      $stdout.reopen write
       exec cmd
     end
 
@@ -114,6 +114,7 @@ class CIJoe
       output = pipe.read
     end
 
+    Process.waitpid(build.pid)
     status = $?.exitstatus.to_i
     puts "#{Time.now.to_i}: Built #{build.short_sha}: status=#{status}"
 
