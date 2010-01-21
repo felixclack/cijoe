@@ -11,6 +11,10 @@
   padding: 0;
 }
 
+html, body {
+  height: 100%;
+}
+
 body {
   background-color: white;
   font: 13.34px helvetica, arial, clean, sans-serif;
@@ -23,7 +27,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  margin-bottom: 1em;
+  margin-bottom: 4px;
 }
 
 h1 a {
@@ -40,7 +44,7 @@ h1 a {
 }
 
 .errored, .color33 {
-  color: yellow !important;
+  color: #c4b430 !important;
 }
 
 p {
@@ -56,7 +60,7 @@ a:hover {
 }
 
 a:visited {
-  color: #a0a;
+  color: #00a;
 }
 
 table {
@@ -94,8 +98,7 @@ ul.posts {
 .site {
   font-size: 110%;
   text-align: justify;
-  width: 40em;
-  margin: 3em auto 2em auto;
+  width: 100%;
   line-height: 1.5em;
 }
 
@@ -156,6 +159,10 @@ ul.posts {
         border: 0;
       }
 
+input {
+  float: right;
+  margin-right:5px;
+}
 /*****************************************************************************/
 /*
 /* Posts
@@ -169,8 +176,8 @@ ul.posts {
 /* standard */
 
 #post pre {
-  border: 1px solid #ddd;
-  background-color: #eef;
+  border: 2px solid #ddd;
+  background-color: #333;
   padding: 0 .4em;
 }
 
@@ -193,16 +200,22 @@ ul.posts {
 /* terminal */
 
 pre.terminal {
-  border: 1px solid black;
+  border: 2px solid #999;
   background-color: #fff;
   color: #333;
-  padding: 5px;
-  overflow: auto;
+  padding: 15px;
+  /* overflow: auto; */
   word-wrap: break-word;
 }
 
 pre.terminal code {
   font-family: 'Bitstream Vera Sans Mono', 'Courier', monospace;
   background-color: #fff;
+}
+
+pre {
+  white-space: pre-wrap; /* CSS2.1 compliant */
+  white-space: -moz-pre-wrap; /* Mozilla-based browsers */
+  white-space: o-pre-wrap; /* Opera 7+ */
 }
 
