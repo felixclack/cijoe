@@ -16,7 +16,7 @@ class CIJoe
 
     get '/ping' do
       if joe.building? || !joe.last_build || !joe.last_build.worked?
-        halt 412, joe.last_build ? joe.last_build.sha : "building"
+        halt 412, (joe.building? || joe.last_build.nil?) ? "building" : joe.last_build.sha
       end
 
       joe.last_build.sha
@@ -28,19 +28,31 @@ class CIJoe
 
     post '/?' do
       payload = params[:payload].to_s
-      if payload.empty? || payload.include?(joe.git_branch)
-        joe.build
+      if payload =~ /"ref":"(.+?)"/
+        pushed_branch = $1.split('/').last
       end
+
+      # Only build if we were given an explicit branch via `?branch=blah`,
+      # no payload exists (we're probably testing), or the payload exists and
+      # the "ref" property matches our specified build branch.
+      if params[:branch] || payload.empty? || pushed_branch == joe.git_branch
+        joe.build(params[:branch])
+      end
+
       redirect request.path
     end
 
-    user, pass = Config.cijoe.user.to_s, Config.cijoe.pass.to_s
-    if user != '' && pass != ''
-      use Rack::Auth::Basic do |username, password|
-        [ username, password ] == [ user, pass ]
+    get '/api/json' do
+        response  = [200, {'Content-Type' => 'application/json'}]
+        response_json = erb(:json, {}, :joe => joe)
+      if params[:jsonp]
+        response << params[:jsonp] + '(' +  response_json + ')'
+      else
+        response << response_json
       end
-      puts "Using HTTP basic auth"
+      response
     end
+
 
     helpers do
       include Rack::Utils
@@ -68,12 +80,28 @@ class CIJoe
       check_project
       @joe = CIJoe.new(options.project_path)
 
-      CIJoe::Campfire.activate
+      CIJoe::Campfire.activate(options.project_path)
     end
 
     def self.start(host, port, project_path)
       set :project_path, project_path
       CIJoe::Server.run! :host => host, :port => port
+    end
+
+    def self.rack_start(project_path)
+      set :project_path, project_path
+      self.new
+    end
+
+    def self.project_path=(project_path)
+      user, pass = Config.cijoe(project_path).user.to_s, Config.cijoe(project_path).pass.to_s
+      if user != '' && pass != ''
+        use Rack::Auth::Basic do |username, password|
+          [ username, password ] == [ user, pass ]
+        end
+        puts "Using HTTP basic auth"
+      end
+      set :project_path, Proc.new{project_path}
     end
 
     def check_project

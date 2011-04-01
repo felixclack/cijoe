@@ -1,6 +1,8 @@
 class CIJoe
   module Campfire
-    def self.activate
+    def self.activate(project_path)
+      @project_path = project_path
+
       if valid_config?
         require 'tinder'
 
@@ -9,12 +11,11 @@ class CIJoe
         end
 
         puts "Loaded Campfire notifier"
-      else
+      elsif ENV['RACK_ENV'] != 'test'
         puts "Can't load Campfire notifier."
         puts "Please add the following to your project's .git/config:"
         puts "[campfire]"
-        puts "\tuser = your@campfire.email"
-        puts "\tpass = passw0rd"
+        puts "\ttoken = your_api_token"
         puts "\tsubdomain = whatever"
         puts "\troom = Awesomeness"
         puts "\tssl = false"
@@ -22,17 +23,17 @@ class CIJoe
     end
 
     def self.config
+      campfire_config = Config.new('campfire', @project_path)
       @config ||= {
-        :subdomain => Config.campfire.subdomain.to_s,
-        :user      => Config.campfire.user.to_s,
-        :pass      => Config.campfire.pass.to_s,
-        :room      => Config.campfire.room.to_s,
-        :ssl       => Config.campfire.ssl.to_s.strip == 'true'
+        :subdomain => campfire_config.subdomain.to_s,
+        :token     => campfire_config.token.to_s,
+        :room      => campfire_config.room.to_s,
+        :ssl       => campfire_config.ssl.to_s.strip == 'true'
       }
     end
 
     def self.valid_config?
-      %w( subdomain user pass room ).all? do |key|
+      %w( subdomain token room ).all? do |key|
         !config[key.intern].empty?
       end
     end
@@ -48,16 +49,16 @@ class CIJoe
     def room
       @room ||= begin
         config = Campfire.config
-        options = {}
-        options[:ssl] = config[:ssl] ? true : false
-        campfire = Tinder::Campfire.new(config[:subdomain], options)
-        campfire.login(config[:user], config[:pass])
+        campfire = Tinder::Campfire.new(config[:subdomain],
+            :token => config[:token],
+            :ssl => config[:ssl] || false)
         campfire.find_room_by_name(config[:room])
       end
     end
 
     def short_message
-      "Build #{short_sha} of #{project} #{worked? ? "was successful" : "failed"}"
+      "#{branch} at #{short_sha} of #{project} " +
+        (worked? ? "passed" : "failed") + " (#{duration.to_i}s)"
     end
     
     def play_sound

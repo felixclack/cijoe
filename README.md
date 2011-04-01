@@ -7,24 +7,20 @@ server that'll run your tests on demand and report their pass/fail status.
 
 Because knowing is half the battle.
 
-![The Battle](http://img.skitch.com/20090805-g4a2qhttwij8n2jr9t552efn3k.png)
+[![The Battle](http://img.skitch.com/20090805-g4a2qhttwij8n2jr9t552efn3k.png)](http://nerduo.com/thebattle/)
+
+([Buy the shirt](http://nerduo.com/thebattle/))
 
 Quickstart
 ----------
 
-Rip:
-
-    $ rip install git://github.com/defunkt/cijoe.git
-    $ git clone git://github.com/you/yourrepo.git
-    $ cijoe yourrepo
-
-Gemcutter:
+RubyGems:
 
     $ gem install cijoe
     $ git clone git://github.com/you/yourrepo.git
     $ cijoe yourrepo
 
-Boom. Navigate to http://localhost:4567 to see Joe in action.
+Boom. Navigate to <http://localhost:4567> to see Joe in action.
 Check `cijoe -h` for other options.
 
 Basically you need to run `cijoe` and hand it the path to a git
@@ -55,15 +51,27 @@ build. Pull any metadata you want out of that scro.
 
 
 Other Branches
---------------
+----------------------
 
 Want joe to run against a branch other than `master`? No problem:
 
     $ git config --add cijoe.branch deploy
 
 
+Concurrent Push's - a kind of "queueing"
+----------------------------------------
+
+Joe runs just one build at the time. If you expect concurrent push's
+to your repo and want joe to build each in a kind of queue, just set:
+
+    $ git config --add cijoe.buildallfile tmp/cijoe.txt
+
+Joe will save requests while another build runs. If more than one push
+hits joe, he just picks the last after finishing the prior.
+
+
 Campfire
---------
+-------------
 
 Campfire notification is included, because it's what we use. Want Joe
 notify your Campfire? Put this in your repo's `.git/config`:
@@ -84,7 +92,7 @@ Or do it the old fashion way:
 
 
 Checkin' Status
----------------
+----------------------
 
 Want to see how your build's doing without any of this fancy UI crap?
 Ping Joe for the lowdown:
@@ -95,15 +103,18 @@ Joe will return `200 OK` if all is quiet on the Western Front. If
 Joe's busy building or your last build failed, you'll get `412
 PRECONDITION FAILED`.
 
+
 Multiple Projects
------------------
+------------------------
 
 Want CI for multiple projects? Just start multiple instances of Joe!
 He can run on any port - try `cijoe -h` for more options.
 
+If you're using Passenger, see [this blog post](http://chrismdp.github.com/2010/03/multiple-ci-joes-with-rack-and-passenger/).
+
 
 HTTP Auth
----------
+----------------
 
 Worried about people triggering your builds? Setup HTTP auth:
 
@@ -112,7 +123,7 @@ Worried about people triggering your builds? Setup HTTP auth:
 
 
 GitHub Integration
-------------------
+--------------------------
 
 Any POST to Joe will trigger a build. If you are hiding Joe behind
 HTTP auth, that's okay - GitHub knows how to authenticate properly.
@@ -124,7 +135,7 @@ of your project's "Admin" tab.
 
 
 Daemonize
----------
+----------------
 
 Want to run Joe as a daemon? Use `nohup`:
 
@@ -132,18 +143,26 @@ Want to run Joe as a daemon? Use `nohup`:
 
 
 Other CI Servers
-----------------
+------------------------
 
 Need more features? More notifiers? Check out one of these bad boys:
 
+* [Jenkins](http://jenkins-ci.org/)
 * [Cerberus](http://cerberus.rubyforge.org/)
 * [Integrity](http://integrityapp.com/)
 * [CruiseControl.rb](http://cruisecontrolrb.thoughtworks.com/)
 * [BuildBot](http://buildbot.net/trac)
+* [Signal](http://www.github.com/dcrec1/signal)
+
+
+Does GitHub use cijoe?
+---------------------------------
+
+No. We use [Jenkins](http://jenkins-ci.org/).
 
 
 Screenshots
------------
+------------------
 
 ![Building](http://img.skitch.com/20090806-ryw34ksi5ixnrdwxcptqy28iy7.png)
 
@@ -151,9 +170,6 @@ Screenshots
 
 
 Questions? Concerns?
---------------------
+---------------------------------
 
-[Issues](http://github.com/defunkt/cijoe/issues) or [the mailing list](http://groups.google.com/group/cijoe).
-
-
-( Chris Wanstrath :: chris@ozmm.org )
+[Issues](http://github.com/defunkt/cijoe/issues)
